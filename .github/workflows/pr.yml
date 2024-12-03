@@ -4,9 +4,6 @@ on:
   pull_request:
     branches:
       - 'main'
-  merge_group:
-    types:
-      - checks_requested
 
 concurrency:
   group: ${{ format('{0}-{1}', github.workflow, github.ref) }}
