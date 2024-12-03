@@ -58,27 +58,3 @@ jobs:
 
       - name: Retrieve Project Name
         run: echo "PROJECT_NAME=$(${{github.workspace}}/gradlew -q printProjectName)" >> $GITHUB_ENV
-
-      - name: Notify on success
-        if: success()
-        uses: appleboy/discord-action@v1.1.0
-        with:
-          webhook_id: ${{ vars.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          color: "#00FF00"
-          username: "${{ env.PROJECT_NAME }} Release Bot"
-          message: >
-            An ${{ env.PROJECT_NAME }} release draft was deployed by ${{ github.actor }}:
-            ${{ needs.release.outputs.url }}
-
-      - name: Notify on failure
-        if: failure()
-        uses: appleboy/discord-action@v1.1.0
-        with:
-          webhook_id: ${{ vars.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          color: "#FF0000"
-          username: "${{ env.PROJECT_NAME }} Release Bot"
-          message: >
-            An ${{ env.PROJECT_NAME }} release draft ran by ${{ github.actor }} failed:
-            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
