@@ -1,4 +1,4 @@
-package com.example.warps;
+package org.winlogon.simplewarp;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

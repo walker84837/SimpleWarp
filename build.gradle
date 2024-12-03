@@ -1,14 +1,11 @@
-import com.github.spotbugs.snom.SpotBugsTask
 import java.text.SimpleDateFormat
 
 plugins {
-    id 'checkstyle'
-    id "com.github.spotbugs" version "6.0.26"
     id 'com.gradleup.shadow' version '8.3.5'
     id 'java'
 }
 
-group = "com.crimsonwarpedcraft.exampleplugin"
+group = "org.winlogon.simplewarp"
 
 static def getTime() {
     SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd-HHmm")
@@ -65,10 +62,7 @@ repositories {
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT'
-    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.6'
     implementation 'io.papermc:paperlib:1.0.8'
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.13.0'
-    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.6'
     testImplementation 'io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.3'
@@ -81,33 +75,6 @@ test {
 processResources {
     filesMatching("**/plugin.yml") {
         expand ( NAME: rootProject.name, VERSION: version, PACKAGE: project.group.toString() )
-    }
-}
-
-checkstyle {
-    toolVersion '10.20.1'
-    maxWarnings = 0
-}
-
-configurations.checkstyle {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
-        select("com.google.guava:guava:23.0")
-    }
-}
-
-tasks.withType(Checkstyle).configureEach {
-    reports {
-        xml.required = false
-        html.required = true
-    }
-}
-
-tasks.withType(SpotBugsTask).configureEach {
-    reports.create("html") {
-        required = true
-    }
-    reports.create("xml") {
-        required = false
     }
 }
 
