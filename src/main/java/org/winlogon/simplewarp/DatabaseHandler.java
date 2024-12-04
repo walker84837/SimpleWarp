@@ -34,7 +34,10 @@ public class DatabaseHandler {
         }
     }
 
-    public Connection getConnection() {
+    public Connection getConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            connectToDatabase();
+        }
         return connection;
     }
 

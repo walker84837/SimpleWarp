@@ -9,10 +9,14 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.text.DecimalFormat;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Arrays;
 
 public class WarpPlugin extends JavaPlugin {
     private DatabaseHandler databaseHandler;
@@ -53,35 +57,36 @@ public class WarpPlugin extends JavaPlugin {
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("This command can only be used by players.");
+            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
             return true;
         }
 
         if (args.length < 1) {
-            player.sendMessage("Usage: /warp <new|remove|edit|teleport> [arguments]");
+            player.sendMessage(ChatColor.YELLOW + "Usage: " + ChatColor.AQUA + "/warp <new|remove|edit|teleport> [arguments]");
             return true;
         }
 
         String subCommand = args[0].toLowerCase();
         switch (subCommand) {
-            case "new" -> handleNewWarp(player, args);
-            case "remove" -> handleRemoveWarp(player, args);
-            case "edit" -> handleEditWarp(player, args);
-            case "teleport" -> handleTeleport(player, args);
-            default -> player.sendMessage("Invalid subcommand. Use: /warp <new|remove|edit|teleport>");
+            case "new" -> newWarp(player, args);
+            case "remove" -> removeWarp(player, args);
+            case "edit" -> editWarp(player, args);
+            case "teleport", "tp" -> teleport(player, args);
+            default -> player.sendMessage(
+                    ChatColor.RED + "Invalid subcommand." + ChatColor.GRAY + " Use: /warp <new|remove|edit|teleport>");
         }
 
         return true;
     }
 
-    private void handleNewWarp(Player player, String[] args) {
+    private void newWarp(Player player, String[] args) {
         if (!player.hasPermission("warp.admin")) {
-            player.sendMessage("You do not have permission to use this command.");
+            player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
             return;
         }
 
         if (args.length < 2) {
-            player.sendMessage("Usage: /warp new [name] {[x] [y] [z]}");
+            player.sendMessage(ChatColor.YELLOW + "Usage: " + ChatColor.AQUA + "/warp new [name] {[x] [y] [z]}");
             return;
         }
 
@@ -90,11 +95,14 @@ public class WarpPlugin extends JavaPlugin {
 
         if (args.length >= 5) {
             try {
-                location.setX(Double.parseDouble(args[2]));
-                location.setY(Double.parseDouble(args[3]));
-                location.setZ(Double.parseDouble(args[4]));
-            } catch (NumberFormatException e) {
-                player.sendMessage("Coordinates must be valid numbers.");
+                DecimalFormat df = new DecimalFormat("#.##");
+                location.setX(df.parse(df.format(args[2])).doubleValue());
+                location.setY(df.parse(df.format(args[3])).doubleValue());
+                location.setZ(df.parse(df.format(args[4])).doubleValue());
+
+            } catch (Exception e) {
+                player.sendMessage(ChatColor.RED + "Coordinates must be valid numbers (" + ChatColor.ITALIC
+                        + e.getMessage() + ChatColor.RESET + ").");
                 return;
             }
         }
@@ -109,20 +117,22 @@ public class WarpPlugin extends JavaPlugin {
                 stmt.setString(5, location.getWorld().getName());
                 stmt.executeUpdate();
             }
-            player.sendMessage("Warp '" + name + "' created at " + location.toVector() + " in world '" + location.getWorld().getName() + "'.");
+            player.sendMessage(ChatColor.GRAY + "Warp " + ChatColor.DARK_AQUA + name + ChatColor.GRAY 
+                + " created at " + ChatColor.DARK_GREEN + location.toVector() + ChatColor.GRAY + " in world "
+                + ChatColor.DARK_AQUA + location.getWorld().getName() + ChatColor.GRAY + ".");
         } catch (SQLException e) {
-            player.sendMessage("Failed to create warp: " + e.getMessage());
+            player.sendMessage(ChatColor.RED + "Failed to create warp: " + e.getMessage());
         }
     }
 
-    private void handleRemoveWarp(Player player, String[] args) {
+    private void removeWarp(Player player, String[] args) {
         if (!player.hasPermission("warp.admin")) {
-            player.sendMessage("You do not have permission to use this command.");
+            player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
             return;
         }
 
         if (args.length < 2) {
-            player.sendMessage("Usage: /warp remove [name]");
+            player.sendMessage(ChatColor.YELLOW + "Usage: " + ChatColor.AQUA + "/warp remove [name]");
             return;
         }
 
@@ -132,21 +142,24 @@ public class WarpPlugin extends JavaPlugin {
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, name);
                 int rows = stmt.executeUpdate();
-                player.sendMessage(rows > 0 ? "Warp '" + name + "' removed." : "No warp found with name '" + name + "'.");
+                player.sendMessage(
+                        rows > 0 
+                        ? ChatColor.GRAY + "Warp " + ChatColor.DARK_AQUA + name + ChatColor.GRAY + " removed." 
+                        : ChatColor.RED + "No warp found with name " + name + ".");
             }
         } catch (SQLException e) {
-            player.sendMessage("Failed to remove warp: " + e.getMessage());
+            player.sendMessage(ChatColor.RED + "Failed to remove warp: " + e.getMessage());
         }
     }
 
-    private void handleEditWarp(Player player, String[] args) {
+    private void editWarp(Player player, String[] args) {
         if (!player.hasPermission("warp.admin")) {
-            player.sendMessage("You do not have permission to use this command.");
+            player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
             return;
         }
 
         if (args.length < 2) {
-            player.sendMessage("Usage: /warp edit [name] {[x] [y] [z]}");
+            player.sendMessage(ChatColor.YELLOW + "Usage: " + ChatColor.AQUA + "/warp edit [name] {[x] [y] [z]}");
             return;
         }
 
@@ -159,7 +172,7 @@ public class WarpPlugin extends JavaPlugin {
                 location.setY(Double.parseDouble(args[3]));
                 location.setZ(Double.parseDouble(args[4]));
             } catch (NumberFormatException e) {
-                player.sendMessage("Coordinates must be valid numbers.");
+                player.sendMessage(ChatColor.RED + "Coordinates must be valid numbers.");
                 return;
             }
         }
@@ -171,44 +184,64 @@ public class WarpPlugin extends JavaPlugin {
                 stmt.setDouble(2, location.getY());
                 stmt.setDouble(3, location.getZ());
                 stmt.setString(4, name);
+
                 int rows = stmt.executeUpdate();
-                player.sendMessage(rows > 0 ? "Warp '" + name + "' updated to " + location.toVector() + "." : "No warp found with name '" + name + "'.");
+                player.sendMessage(
+                        rows > 0 
+                        ? ChatColor.GRAY + "Warp " + ChatColor.DARK_AQUA + name + ChatColor.GRAY + " updated to " 
+                            + ChatColor.DARK_GREEN + location.toVector() + ChatColor.GRAY + "." 
+                        : ChatColor.RED + "No warp found with name " + name + ".");
             }
         } catch (SQLException e) {
-            player.sendMessage("Failed to edit warp: " + e.getMessage());
+            player.sendMessage(ChatColor.RED + "Failed to edit warp: " + e.getMessage());
         }
     }
 
-    private void handleTeleport(Player player, String[] args) {
+    private void teleport(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage("Usage: /warp teleport [name]");
+            player.sendMessage(ChatColor.YELLOW + "Usage: " + ChatColor.AQUA + "/warp teleport [name]");
             return;
         }
 
         String name = args[1];
         try (Connection connection = databaseHandler.getConnection()) {
             String sql = "SELECT x, y, z, world FROM warps WHERE name = ?";
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, name);
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    double x = rs.getDouble("x");
-                    double y = rs.getDouble("y");
-                    double z = rs.getDouble("z");
-                    String worldName = rs.getString("world");
-                    World world = Bukkit.getWorld(worldName);
-                    if (world != null) {
-                        player.teleport(new Location(world, x, y, z));
-                        player.sendMessage("Teleported to warp '" + name + "'.");
-                    } else {
-                        player.sendMessage("Warp '" + name + "' references an unknown world '" + worldName + "'.");
-                    }
-                } else {
-                    player.sendMessage("No warp found with name '" + name + "'.");
-                }
-            }
+            teleportToWarp(player, name, connection, sql);
         } catch (SQLException e) {
-            player.sendMessage("Failed to teleport: " + e.getMessage());
+            player.sendMessage(ChatColor.RED + "Failed to teleport: " + e.getMessage());
         }
     }
+
+    private void teleportToWarp(Player player, String name, Connection connection, String sql) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, name);
+            ResultSet rs = stmt.executeQuery();
+
+            if (!rs.next()) {
+                player.sendMessage(ChatColor.RED + "No warp found with name " + ChatColor.DARK_AQUA + name + ChatColor.RED + ".");
+                return;
+            }
+
+            List<String> axes = Arrays.asList("x", "y", "z");
+            HashMap<String, Double> loc = new HashMap<>();
+
+            for (String axis : axes) {
+                loc.put(axis, rs.getDouble(axis));
+
+            }
+
+            String worldName = rs.getString("world");
+            World world = Bukkit.getWorld(worldName);
+
+            if (world == null) {
+                player.sendMessage(ChatColor.RED + "Warp " + ChatColor.DARK_AQUA + name + ChatColor.RED 
+                    + " references an unknown world " + ChatColor.DARK_PURPLE + worldName + ChatColor.RED + ".");
+                return;
+            }
+
+            player.teleport(new Location(world, loc.get("x"), loc.get("y"), loc.get("z")));
+            player.sendMessage(ChatColor.GRAY + "Teleported to warp " + ChatColor.DARK_AQUA + name + ChatColor.GRAY + ".");
+        }
+    }
+
 }

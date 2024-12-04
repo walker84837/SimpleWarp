@@ -11,9 +11,4 @@ commands:
 permissions:
   warp.admin:
     description: Permissions to create, edit and delete warps
-    default: false
-  example.*:
-    description: Grants all other permissions
-    default: false
-    children:
-      example.test: true
+    default: op

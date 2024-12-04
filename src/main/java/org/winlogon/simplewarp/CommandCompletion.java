@@ -27,15 +27,16 @@ public class CommandCompletion implements TabCompleter {
             suggestions.add("remove");
             suggestions.add("edit");
             suggestions.add("teleport");
+            suggestions.add("tp");
         } else if (args.length == 2 && !args[0].equalsIgnoreCase("new")) {
             try (Connection connection = databaseHandler.getConnection();
-                 Statement stmt = connection.createStatement()) {
+                Statement stmt = connection.createStatement()) {
                 ResultSet rs = stmt.executeQuery("SELECT name FROM warps");
                 while (rs.next()) {
                     suggestions.add(rs.getString("name"));
                 }
             } catch (SQLException e) {
-                sender.sendMessage("Failed to fetch warp names for tab completion.");
+                sender.sendMessage(ChatColor.RED + "Failed to fetch warp names for tab completion:" + ChatColor.GRAY + e.getMessage());
             }
         }
         return suggestions;
