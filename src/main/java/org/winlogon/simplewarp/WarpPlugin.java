@@ -111,9 +111,9 @@ public class WarpPlugin extends JavaPlugin {
             String sql = "INSERT INTO warps (name, x, y, z, world) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, name);
-                stmt.setDouble(2, location.getX());
-                stmt.setDouble(3, location.getY());
-                stmt.setDouble(4, location.getZ());
+                stmt.setInt(2, location.getX());
+                stmt.setInt(3, location.getY());
+                stmt.setInt(4, location.getZ());
                 stmt.setString(5, location.getWorld().getName());
                 stmt.executeUpdate();
             }
@@ -168,9 +168,9 @@ public class WarpPlugin extends JavaPlugin {
 
         if (args.length >= 5) {
             try {
-                location.setX(Double.parseDouble(args[2]));
-                location.setY(Double.parseDouble(args[3]));
-                location.setZ(Double.parseDouble(args[4]));
+                location.setX(Integer.parseInt(args[2]));
+                location.setY(Integer.parseInt(args[3]));
+                location.setZ(Integer.parseInt(args[4]));
             } catch (NumberFormatException e) {
                 player.sendMessage(ChatColor.RED + "Coordinates must be valid numbers.");
                 return;
@@ -180,9 +180,9 @@ public class WarpPlugin extends JavaPlugin {
         try (Connection connection = databaseHandler.getConnection()) {
             String sql = "UPDATE warps SET x = ?, y = ?, z = ? WHERE name = ?";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setDouble(1, location.getX());
-                stmt.setDouble(2, location.getY());
-                stmt.setDouble(3, location.getZ());
+                stmt.setInt(1, (int) Math.ceil(location.getX()));
+                stmt.setInt(2, (int) Math.ceil(location.getY()));
+                stmt.setInt(3, (int) Math.ceil(location.getZ()));
                 stmt.setString(4, name);
 
                 int rows = stmt.executeUpdate();

@@ -25,9 +25,9 @@ public class DatabaseHandler {
         String sql = "CREATE TABLE IF NOT EXISTS warps (" +
                      "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                      "name TEXT UNIQUE NOT NULL, " +
-                     "x DOUBLE NOT NULL, " +
-                     "y DOUBLE NOT NULL, " +
-                     "z DOUBLE NOT NULL, " +
+                     "x INTEGER NOT NULL, " +
+                     "y INTEGER NOT NULL, " +
+                     "z INTEGER NOT NULL, " +
                      "world TEXT NOT NULL)";
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(sql);
