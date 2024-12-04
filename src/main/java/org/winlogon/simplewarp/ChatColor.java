@@ -1,6 +1,14 @@
 package org.winlogon.simplewarp;
 
+/**
+ * A class that contains color codes and text style codes.
+ */
 public class ChatColor {
+    /**
+     * Prevents instantiation of this class.
+     * 
+     * @throws UnsupportedOperationException
+     */
     private ChatColor() throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Utility class");
     }
