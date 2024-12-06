@@ -9,7 +9,6 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.text.DecimalFormat;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,6 +37,11 @@ public class WarpPlugin extends JavaPlugin {
         registerCommands();
     }
 
+    /** 
+     * Registers the commands for this plugin.
+     *
+     * @return void
+     */
     private void registerCommands() {
         PluginCommand warpCommand = getCommand("warp");
         if (warpCommand != null) {
@@ -79,6 +83,13 @@ public class WarpPlugin extends JavaPlugin {
         return true;
     }
 
+    /**
+     * Creates a new warp.
+     *
+     * @param player The player who executed the command.
+     * @param args The command arguments.
+     * @return void
+     */
     private void newWarp(Player player, String[] args) {
         if (!player.hasPermission("warp.admin")) {
             player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
@@ -86,7 +97,7 @@ public class WarpPlugin extends JavaPlugin {
         }
 
         if (args.length < 2) {
-            player.sendMessage(ChatColor.YELLOW + "Usage: " + ChatColor.AQUA + "/warp new [name] {[x] [y] [z]}");
+            player.sendMessage(ChatColor.YELLOW + "Usage: /warp new [name] {[x] [y] [z]}");
             return;
         }
 
@@ -95,14 +106,11 @@ public class WarpPlugin extends JavaPlugin {
 
         if (args.length >= 5) {
             try {
-                DecimalFormat df = new DecimalFormat("#.##");
-                location.setX(df.parse(df.format(args[2])).doubleValue());
-                location.setY(df.parse(df.format(args[3])).doubleValue());
-                location.setZ(df.parse(df.format(args[4])).doubleValue());
-
-            } catch (Exception e) {
-                player.sendMessage(ChatColor.RED + "Coordinates must be valid numbers (" + ChatColor.ITALIC
-                        + e.getMessage() + ChatColor.RESET + ").");
+                location.setX(Integer.parseInt(args[2]));
+                location.setY(Integer.parseInt(args[3]));
+                location.setZ(Integer.parseInt(args[4]));
+            } catch (NumberFormatException e) {
+                player.sendMessage(ChatColor.RED + "Coordinates must be valid integers.");
                 return;
             }
         }
@@ -111,12 +119,13 @@ public class WarpPlugin extends JavaPlugin {
             String sql = "INSERT INTO warps (name, x, y, z, world) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, name);
-                stmt.setDouble(2, location.getX());
-                stmt.setDouble(3, location.getY());
-                stmt.setDouble(4, location.getZ());
+                stmt.setInt(2, (int) Math.round(location.getX()));
+                stmt.setInt(3, (int) Math.round(location.getY()));
+                stmt.setInt(4, (int) Math.round(location.getZ()));
                 stmt.setString(5, location.getWorld().getName());
                 stmt.executeUpdate();
             }
+
             player.sendMessage(ChatColor.GRAY + "Warp " + ChatColor.DARK_AQUA + name + ChatColor.GRAY 
                 + " created at " + ChatColor.DARK_GREEN + location.toVector() + ChatColor.GRAY + " in world "
                 + ChatColor.DARK_AQUA + location.getWorld().getName() + ChatColor.GRAY + ".");
@@ -125,6 +134,13 @@ public class WarpPlugin extends JavaPlugin {
         }
     }
 
+    /**
+     * Removes a warp.
+     *
+     * @param player The player who executed the command.
+     * @param args The command arguments.
+     * @return void
+     */
     private void removeWarp(Player player, String[] args) {
         if (!player.hasPermission("warp.admin")) {
             player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
@@ -152,6 +168,13 @@ public class WarpPlugin extends JavaPlugin {
         }
     }
 
+    /**
+     * Edits a warp.
+     * 
+     * @param player The player who executed the command.
+     * @param args The command arguments.
+     * @return void
+     */
     private void editWarp(Player player, String[] args) {
         if (!player.hasPermission("warp.admin")) {
             player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
@@ -168,9 +191,9 @@ public class WarpPlugin extends JavaPlugin {
 
         if (args.length >= 5) {
             try {
-                location.setX(Double.parseDouble(args[2]));
-                location.setY(Double.parseDouble(args[3]));
-                location.setZ(Double.parseDouble(args[4]));
+                location.setX(Integer.parseInt(args[2]));
+                location.setY(Integer.parseInt(args[3]));
+                location.setZ(Integer.parseInt(args[4]));
             } catch (NumberFormatException e) {
                 player.sendMessage(ChatColor.RED + "Coordinates must be valid numbers.");
                 return;
@@ -180,9 +203,9 @@ public class WarpPlugin extends JavaPlugin {
         try (Connection connection = databaseHandler.getConnection()) {
             String sql = "UPDATE warps SET x = ?, y = ?, z = ? WHERE name = ?";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setDouble(1, location.getX());
-                stmt.setDouble(2, location.getY());
-                stmt.setDouble(3, location.getZ());
+                stmt.setInt(1, (int) Math.round(location.getX()));
+                stmt.setInt(2, (int) Math.round(location.getY()));
+                stmt.setInt(3, (int) Math.round(location.getZ()));
                 stmt.setString(4, name);
 
                 int rows = stmt.executeUpdate();
@@ -197,6 +220,13 @@ public class WarpPlugin extends JavaPlugin {
         }
     }
 
+    /**
+     * Teleports a player to a warp.
+     *
+     * @param player The player who executed the command.
+     * @param args The command arguments.
+     * @return void
+     */
     private void teleport(Player player, String[] args) {
         if (args.length < 2) {
             player.sendMessage(ChatColor.YELLOW + "Usage: " + ChatColor.AQUA + "/warp teleport [name]");
@@ -212,6 +242,16 @@ public class WarpPlugin extends JavaPlugin {
         }
     }
 
+    /**
+     * Teleports a player to a warp.
+     *
+     * @param player The player who executed the command.
+     * @param name The name of the warp to teleport to.
+     * @param connection The database connection.
+     * @param sql The SQL query to execute.
+     * @return void
+     * @throws SQLException
+     */
     private void teleportToWarp(Player player, String name, Connection connection, String sql) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, name);
