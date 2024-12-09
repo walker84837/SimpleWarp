@@ -7,6 +7,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Handles the connection to the SQLite 
+ * database, which stores the warps.
+ * 
+ * @author walker84837
+ */
 public class DatabaseHandler {
     private final JavaPlugin plugin;
     private Connection connection;
@@ -35,9 +41,9 @@ public class DatabaseHandler {
         String sql = "CREATE TABLE IF NOT EXISTS warps (" +
                      "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                      "name TEXT UNIQUE NOT NULL, " +
-                     "x INTEGER NOT NULL, " +
-                     "y INTEGER NOT NULL, " +
-                     "z INTEGER NOT NULL, " +
+                     "x REAL NOT NULL, " +
+                     "y REAL NOT NULL, " +
+                     "z REAL NOT NULL, " +
                      "world TEXT NOT NULL)";
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(sql);
@@ -57,6 +63,12 @@ public class DatabaseHandler {
         return connection;
     }
 
+    /**
+     * Closes the connection to the SQLite database.
+     * 
+     * @return void
+     * @throws SQLException
+     */
     public void closeConnection() throws SQLException {
         if (connection != null && !connection.isClosed()) {
             connection.close();

@@ -203,9 +203,9 @@ public class WarpPlugin extends JavaPlugin {
         try (Connection connection = databaseHandler.getConnection()) {
             String sql = "UPDATE warps SET x = ?, y = ?, z = ? WHERE name = ?";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setInt(1, (int) Math.round(location.getX()));
-                stmt.setInt(2, (int) Math.round(location.getY()));
-                stmt.setInt(3, (int) Math.round(location.getZ()));
+                stmt.setDouble(1, location.getX());
+                stmt.setDouble(2, location.getY());
+                stmt.setDouble(3, location.getZ());
                 stmt.setString(4, name);
 
                 int rows = stmt.executeUpdate();
@@ -243,7 +243,7 @@ public class WarpPlugin extends JavaPlugin {
     }
 
     /**
-     * Teleports a player to a warp.
+     * Teleports a player to a warp saved in the database.
      *
      * @param player The player who executed the command.
      * @param name The name of the warp to teleport to.
